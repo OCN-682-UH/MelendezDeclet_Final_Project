@@ -1,8 +1,8 @@
 # Coastal Water Quality in La Parguera, Puerto Rico 
 Project: 
 
-Author: Carolina V. Meléndez Declet
-cvmd@hawaii.edu 
+Author: Carolina V. Meléndez Declet,
+cvmd@hawaii.edu, 
 *University of Hawaiʻi at Mānoa; University of Puerto Rico–Mayagüez*
 
 Study Sites: 
