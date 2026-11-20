@@ -1,0 +1,90 @@
+---
+title: "Figure2_ChemTimeSeries"
+author: "Carolina Melendez Declet"
+format: html
+---
+
+The following code provides a multi-panel stacked plot showing a timeseries for montly measured (a) temperature, (b) salinity, (c) dissolved oxygen, (d) pH calculated from TA and DIC, (e) nox, (f) po4 
+
+Contact info: cvmd@hawaii.edu & carolina.melendez3@upr.edu 
+
+## Load Libraries 
+```{r}
+#| output: false
+
+library(tidyverse) 
+library(here)
+library(patchwork)
+library(respR)
+library(seacarb)
+```
+
+
+## Load Data 
+```{r}
+#| output: false
+
+UlvaFieldData <- read_csv(here("Data","Base de datos_cphr.csv"),
+                          locale = locale(encoding = "Latin1")) |> # Ask Mica about this 
+  mutate(DateTime = mdy_hm(paste(Date, Time)),
+         Date_Fixed = mdy(Date)) |> 
+  filter(Site_ID == "Collado" |
+         Site_ID == "Atravesado" |
+         Site_ID == "San Cristobal" |
+         Site_ID == "El Palo" |
+         Site_ID == "Laurel") |>  # This dataset had other reef sites that I will be not be using, so I filted the ones I need 
+ filter(Date_Fixed >= as.Date("2025-01-01") & 
+      Date_Fixed < as.Date("2025-12-31"))
+```
+
+The first uploaded dataset contains monthly seawater water quality measurements collected from coral reef sites in La Parguera, Puerto Rico, between January and December 2025. This was created by Catherine Hernandez (University of Puerto Rico at Mayaguez).
+
+The second uplaoded dataset contains the nutrient results from the monthly seawater samples collected throughout 2025. 
+
+## Converting Dissolved Oxygen from mg/L to umol/kg
+```{r}
+UlvaFieldData <- UlvaFieldData |> 
+  mutate(DO_umol_kg = convert_DO(DO, from = "mg/L", to = "umol/kg", S = Salinity, t = Temperature_Field, P = 1.013253)) 
+```
+
+## Converting DIC from uM to umol/kg 
+```{r}
+# Calculate sample density (kg/L) following the equation by Millero & Poisson (1981)
+
+UlvaFieldData <- UlvaFieldData |>
+  mutate(Density_kg_L = (
+    999.842594 + 0.06793952 * Lab_Temperature - 0.00909529 * Lab_Temperature^2 +
+    0.0001001685 * Lab_Temperature^3 - 0.000001120083 * Lab_Temperature^4 +
+    0.000000006536332 * Lab_Temperature^5 +
+    (0.824493 - 0.0040899 * Lab_Temperature + 0.000076438 * Lab_Temperature^2 -
+    0.00000082467 * Lab_Temperature^3 + 0.0000000053875 * Lab_Temperature^4) * Salinity +
+    (-0.00572466 + 0.00010227 * Lab_Temperature -
+    0.0000016546 * Lab_Temperature^2) * Salinity^1.5 +
+    0.00048314 * Salinity^2
+  ) / 1000)
+
+# Using Density (kg/L), we can convert from uM to umol/kg 
+UlvaFieldData <- UlvaFieldData |>
+  mutate(DIC_umol_kg = `DIC (µmol)` / Density_kg_L)
+```
+
+## Converting TA from uM to umol/kg 
+```{r}
+UlvaFieldData <- UlvaFieldData |>
+  mutate(TA_umol_kg = Total_Alkalinity_uM / Density_kg_L)
+```
+
+## Calculate pH using DIC & TA (umol/kg)
+```{r}
+
+```
+
+## Convert NOX to umol/kg 
+
+## Convert PO4 to umol/kg 
+
+## Write Plot Function 
+
+## Test Plot Function 
+
+## Create Final Patchwork Plot 
